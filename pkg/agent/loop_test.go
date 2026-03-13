@@ -1263,7 +1263,8 @@ func TestResolveMediaRefs_EmptyContentGetsPathTag(t *testing.T) {
 
 	docPath := filepath.Join(dir, "doc.docx")
 	os.WriteFile(docPath, []byte("fake docx"), 0o644)
-	ref, _ := store.Store(docPath, media.MediaMeta{ContentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}, "test")
+	docxMIME := "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+	ref, _ := store.Store(docPath, media.MediaMeta{ContentType: docxMIME}, "test")
 
 	messages := []providers.Message{
 		{Role: "user", Content: "", Media: []string{ref}},
