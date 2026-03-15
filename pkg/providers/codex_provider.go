@@ -157,6 +157,10 @@ func (p *CodexProvider) GetDefaultModel() string {
 	return codexDefaultModel
 }
 
+func (p *CodexProvider) SupportsNativeSearch() bool {
+	return p.enableWebSearch
+}
+
 func resolveCodexModel(model string) (string, string) {
 	m := strings.ToLower(strings.TrimSpace(model))
 	if m == "" {
