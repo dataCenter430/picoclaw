@@ -313,6 +313,7 @@
     "allow_write_paths": null,
     "web": {
       "enabled": true,
+      "prefer_native": true,
       "brave": {
         "enabled": false,
         "api_key": "YOUR_BRAVE_API_KEY",
