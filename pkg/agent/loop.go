@@ -1020,9 +1020,13 @@ func (al *AgentLoop) runLLMIteration(
 		providerToolDefs := agent.Tools.ToProviderDefs()
 
 		// Determine whether the provider's native web search should replace
-		// the client-side web_search tool for this request.
+		// the client-side web_search tool for this request. Only enable when web
+		// search is actually enabled and registered (so users who disabled web
+		// access do not get provider-side search or billing).
+		_, hasWebSearch := agent.Tools.Get("web_search")
 		useNativeSearch := al.cfg.Tools.Web.PreferNative &&
-			isNativeSearchProvider(agent.Provider)
+			isNativeSearchProvider(agent.Provider) &&
+			hasWebSearch
 
 		if useNativeSearch {
 			providerToolDefs = filterClientWebSearch(providerToolDefs)

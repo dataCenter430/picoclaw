@@ -95,7 +95,10 @@ func (p *CodexProvider) Chat(
 		)
 	}
 
-	params := buildCodexParams(messages, tools, resolvedModel, options, p.enableWebSearch)
+	// Respect tools.web.prefer_native: only inject native search when the agent
+	// loop requested it (options["native_search"]), so prefer_native: false
+	useNativeSearch := p.enableWebSearch && (options["native_search"] == true)
+	params := buildCodexParams(messages, tools, resolvedModel, options, useNativeSearch)
 
 	stream := p.client.Responses.NewStreaming(ctx, params, opts...)
 	defer stream.Close()
