@@ -3,6 +3,7 @@ package status
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/sipeed/picoclaw/cmd/picoclaw/internal"
 	"github.com/sipeed/picoclaw/cmd/picoclaw/internal/cliui"
@@ -39,19 +40,63 @@ func statusCmd() {
 	}
 
 	if configOK {
-		hasOpenRouter := cfg.Providers.OpenRouter.APIKey != ""
-		hasAnthropic := cfg.Providers.Anthropic.APIKey != ""
-		hasOpenAI := cfg.Providers.OpenAI.APIKey != ""
-		hasGemini := cfg.Providers.Gemini.APIKey != ""
-		hasZhipu := cfg.Providers.Zhipu.APIKey != ""
-		hasQwen := cfg.Providers.Qwen.APIKey != ""
-		hasGroq := cfg.Providers.Groq.APIKey != ""
-		hasVLLM := cfg.Providers.VLLM.APIBase != ""
-		hasMoonshot := cfg.Providers.Moonshot.APIKey != ""
-		hasDeepSeek := cfg.Providers.DeepSeek.APIKey != ""
-		hasVolcEngine := cfg.Providers.VolcEngine.APIKey != ""
-		hasNvidia := cfg.Providers.Nvidia.APIKey != ""
-		hasOllama := cfg.Providers.Ollama.APIBase != ""
+		// PicoClaw moved to a model-centric configuration (model_list). Status should
+		// not depend on a legacy cfg.Providers field (which may not exist under some
+		// build tags). We infer provider availability from model_list entries.
+		hasProtocolKey := func(protocol string) bool {
+			prefix := protocol + "/"
+			for _, m := range cfg.ModelList {
+				if m == nil {
+					continue
+				}
+				if strings.HasPrefix(m.Model, prefix) && m.APIKey() != "" {
+					return true
+				}
+			}
+			return false
+		}
+		findLocalModelBase := func(modelName string) (string, bool) {
+			for _, m := range cfg.ModelList {
+				if m == nil {
+					continue
+				}
+				if m.ModelName == modelName && m.APIBase != "" {
+					return m.APIBase, true
+				}
+			}
+			return "", false
+		}
+		findProtocolBase := func(protocol string) (string, bool) {
+			prefix := protocol + "/"
+			for _, m := range cfg.ModelList {
+				if m == nil {
+					continue
+				}
+				if strings.HasPrefix(m.Model, prefix) && m.APIBase != "" {
+					return m.APIBase, true
+				}
+			}
+			return "", false
+		}
+
+		hasOpenRouter := hasProtocolKey("openrouter")
+		hasAnthropic := hasProtocolKey("anthropic")
+		hasOpenAI := hasProtocolKey("openai")
+		hasGemini := hasProtocolKey("gemini")
+		hasZhipu := hasProtocolKey("zhipu")
+		hasQwen := hasProtocolKey("qwen")
+		hasGroq := hasProtocolKey("groq")
+		hasMoonshot := hasProtocolKey("moonshot")
+		hasDeepSeek := hasProtocolKey("deepseek")
+		hasVolcEngine := hasProtocolKey("volcengine")
+		hasNvidia := hasProtocolKey("nvidia")
+
+		// Local endpoints: allow both the special reserved name and protocol-based entries.
+		vllmBase, hasVLLM := findLocalModelBase("local-model")
+		if !hasVLLM {
+			vllmBase, hasVLLM = findProtocolBase("vllm")
+		}
+		ollamaBase, hasOllama := findProtocolBase("ollama")
 
 		status := func(enabled bool) string {
 			if enabled {
@@ -89,14 +134,14 @@ func statusCmd() {
 
 		if hasVLLM {
 			report.ProviderNames = append(report.ProviderNames, "vLLM / local")
-			report.ProviderVals = append(report.ProviderVals, "✓ "+cfg.Providers.VLLM.APIBase)
+			report.ProviderVals = append(report.ProviderVals, "✓ "+vllmBase)
 		} else {
 			report.ProviderNames = append(report.ProviderNames, "vLLM / local")
 			report.ProviderVals = append(report.ProviderVals, "not set")
 		}
 		if hasOllama {
 			report.ProviderNames = append(report.ProviderNames, "Ollama")
-			report.ProviderVals = append(report.ProviderVals, "✓ "+cfg.Providers.Ollama.APIBase)
+			report.ProviderVals = append(report.ProviderVals, "✓ "+ollamaBase)
 		} else {
 			report.ProviderNames = append(report.ProviderNames, "Ollama")
 			report.ProviderVals = append(report.ProviderVals, "not set")
