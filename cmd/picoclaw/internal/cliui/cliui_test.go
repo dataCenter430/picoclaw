@@ -27,12 +27,15 @@ func TestShowErrHint(t *testing.T) {
 		{"required flag(s) \"model\" not set", true},
 		// Generic invalid-argument errors — should show hint
 		{"invalid argument \"abc\" for --count", true},
+		// required flag errors — should show hint
+		{"required flag(s) \"model\" not set", true},
 		// usage: in message — should show hint
 		{"bad input\nusage: picoclaw ...", true},
-		// Should NOT false-positive on unrelated "flag" words
+		// Should NOT false-positive on broad words
 		{"connection flagged by remote", false},
 		{"feature flag not set", false},
-		{"please flag this issue", false},
+		{"invalid API key provided", false},
+		{"authentication required", false},
 		// Unrelated messages — no hint
 		{"something went wrong", false},
 		{"network timeout", false},

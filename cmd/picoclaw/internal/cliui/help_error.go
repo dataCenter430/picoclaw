@@ -69,7 +69,7 @@ func showErrHint(msg string) bool {
 	return strings.Contains(m, "unknown flag") ||
 		strings.Contains(m, "unknown shorthand flag") ||
 		strings.Contains(m, "flag needs an argument") ||
-		strings.Contains(m, "invalid") ||
-		strings.Contains(m, "required") ||
+		strings.Contains(m, "invalid argument") ||
+		strings.Contains(m, "required flag") ||
 		strings.Contains(m, "usage:")
 }
